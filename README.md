@@ -15,8 +15,8 @@ be brought to a final page where all the images they recieved will be displayed 
 
 ## API Keys 
 To properly run this website, you need to acquire the API keys from Pexels and Unsplash. 
-* Pexels: https://www.pexels.com/api/
-* Unsplash: https://unsplash.com/documentation#creating-a-developer-account
+* [Pexels](https://www.pexels.com/api/)
+* [Unsplash](https://unsplash.com/documentation#creating-a-developer-account)
 
 ## Inputting keys 
 After acquiring the keys, go to the project folder api/keys.py and paste your keys inside the correspending string. 
