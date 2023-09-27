@@ -18,23 +18,23 @@ import api.keys as keys
         6: which API the image was pulled from
 '''
 
-# Implements API interface methods for Pexel
-class Pexel(interface.ApiParserInterface):
-    # Sends a search request to Pexel 
+# Implements API interface methods for Pexels
+class Pexels(interface.ApiParserInterface):
+    # Sends a search request to Pexels
     def send_query(self: object, query: str, page: int, per_page: int) -> list:
-        # Please utilize your own Pexel API key. 
-        if keys.PEXEL_KEY == '':
-            raise Exception("Invalid key: Pexel key cannot be empty.")
+        # Please utilize your own Pexels API key. 
+        if keys.PEXELS_KEY == '':
+            raise Exception("Invalid key: Pexels key cannot be empty.")
 
         url = "https://api.pexels.com/v1/search"
-        headers = {'Authorization': keys.PEXEL_KEY}
+        headers = {'Authorization': keys.PEXELS_KEY}
         payload = {'query': query, 'page': page, 'per_page': per_page}
         request = []
         request = requests.get(url, headers=headers, params=payload)
 
         # Check if key was authorized
         if request.status_code == 401:
-            raise Exception("Invalid key: Pexel key unauthorized. Status code 401.")
+            raise Exception("Invalid key: Pexels key unauthorized. Status code 401.")
 
         return request.json()
 
@@ -42,7 +42,7 @@ class Pexel(interface.ApiParserInterface):
     def parse(self: object, info: list) -> list:
         parse_info = []
         for x in info['photos']:
-            parse_info.append([x['id'], x['photographer'], x['src']['original'], x['src']['large2x'], x['src']['medium'], x['url'], "Pexel"])
+            parse_info.append([x['id'], x['photographer'], x['src']['original'], x['src']['large2x'], x['src']['medium'], x['url'], "Pexels"])
         return parse_info
     
 

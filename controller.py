@@ -33,7 +33,7 @@ max_page_num = ""       # Max page to retrieve from
 # Function that queries APIS, parses necessary information, and returns single array of combined elements
 def requestAPIs(query, page = 1, per_page = 15):
     apis = []
-    apis.append(api.Pexel())
+    apis.append(api.Pexels())
     apis.append(api.Unsplash())
 
     results = []

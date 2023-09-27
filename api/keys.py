@@ -1,7 +1,7 @@
 '''
-    Holds authorization keys needed to make API requests to Pexel and Unsplash
+    Holds authorization keys needed to make API requests to Pexels and Unsplash
 '''
 
 #### ENTER YOUR API KEYS HERE ####
-PEXEL_KEY = ''
+PEXELS_KEY = ''
 UNSPLASH_KEY = ''
