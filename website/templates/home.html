@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="device-width, initial-scale=1.0, shrint-to-fit">
+        <title>BeeArtsy</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/popup.css') }}">
+    </head>
+
+    <body class="bg-light" onload="onLoad()">
+        <div class="container">
+            <div class="py-5 fw-bolder text-uppercase font-monospace fs-5">
+                <p>BeeArtsy</p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="mb-5">
+                <h1>Timed Drawing Practice</h1>
+            </div>
+            <form class="needs-validation" novalidate action="/" method="POST">
+                <div class="mb-4">
+                    <label for="search">Search for a subject</label>
+                    <input type="text" class="form-control" id="searchInput" name="search" required>
+                    <div class="invalid-feedback">
+                        Please enter a valid phrase (i.e. "action-poses").
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="quantity">How many images?</label>
+                    <input type="number" class="form-control" id="quantityInput" name="quantity" min='1' max='200' required>
+                    <div class="invalid-feedback">
+                        Please enter a valid integer 1-200. 
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="time-interval" class="mb-1">Time limit for each image</label>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <select class="form-select" id="selectTime" name="time-interval" required>
+                                <option value="30">30 seconds</option>
+                                <option value="60" selected>1 minute</option>
+                                <option value="120">2 minutes</option>
+                                <option value="300">5 minutes</option>
+                                <option value="600">10 minutes</option>
+                                <option value="900">15 minutes</option>
+                                <option value="1800">30 minutes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="number" class="form-control" id="inputTime" min="1" max="3599" value="30" name="time-interval" disabled>
+                            <div class="invalid-feedback">
+                                Please enter valid time interval less than 3600. 
+                            </div>
+                            <div class="form-check">
+                                <label class="form-check-label" for="formCheck">
+                                    <input class="form-check-input" type="checkbox" value="" id="formCheck" onclick="buttonToggle()">
+                                    Custom time <span class="text-muted">(seconds)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-4 ">
+                    <div class="d-flex align-items-start">
+                        <label for="accuracy" class="form-label">Accuracy</label>
+                        <div class="popup" onclick="popup()">
+                            <img class="material-icons px-1" src="/static/assets/help.png" style="filter:opacity(50%); padding-bottom:4px;">
+                            <span class="popuptext" id="myPopup">The higher the accuracy, the more likely the results will return the correct subject, but the chances of repeat images increases per same search. The lower the accuracy, the less likely for repeat images.</span>
+                        </div>
+                        
+                    </div>
+                    <input type="range" class="form-range" min="1" max="50" step="1" value="45" id="accuracyInput" name="accuracy">
+                </div>
+                <div class="mb-4 d-flex justify-content-center">
+                    <button class="btn btn-primary btn-md mt-3 btn-bold-text" style="width:30%; color:white;" type="submit" id="return-button" onclick="disable()">Start</button>
+                </div>
+            </form>
+        </div>
+    </body>
+    <script>
+        // Disable start button when form is being submitted. If start button is clicked more than once on submit,
+        // the next page will not contain necessary data to work. 
+        function disable() { 
+            var validForms = document.getElementsByClassName('is-valid');
+            var forms = document.getElementsByClassName('needs-validation');
+            if (forms.length == validForms.length){
+                var b = document.getElementById("return-button");
+                b.disabled = true; 
+            }
+        }
+
+        //Disable form submissions if there are invalid fields
+        (function() {
+          'use strict';     // Code executed in 'strict mode'
+  
+          window.addEventListener('load', function() {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+  
+            // Loop over forms and prevent submission if invalid
+            var validation = Array.prototype.filter.call(forms, function(form) {
+              form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                else {
+                    form.classList.add("is-valid");
+                }
+                form.classList.add('was-validated');
+              }, false);
+            });
+          }, false); 
+        })();
+    </script>
+    <script>
+        // When check box is checked, toggle which input option is available 
+        function buttonToggle(){
+            var check = document.getElementById("formCheck");
+            var select = document.getElementById("selectTime");
+            var input = document.getElementById("inputTime"); 
+
+            if (check.checked == true) {
+                select.disabled = true; 
+                input.disabled = false; 
+            }
+            else {
+                select.disabled = false; 
+                input.disabled = true; 
+            }
+        }
+
+        // Log user-perceived load time to console
+        function onLoad() { 
+            if ("{{error}}" == "no search query") {
+                alert("Search returned no results, please try again.")
+            }
+
+            var now = new Date().getTime();
+            var page_load_time = now - performance.timing.navigationStart;
+            console.log("User-perceived page loading time: " + page_load_time);
+        }
+
+        // Accuracy slider 'help' icon 
+        // Show popup when clicked 
+        function popup() {
+            var popup = document.getElementById("myPopup");
+            popup.classList.toggle("show"); 
+        }
+    </script>
+</html>     

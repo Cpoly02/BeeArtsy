@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit">
+        <title>Finished</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.min.css') }}">
+    </head>
+
+    <body class="bg-light"  onload="onLoad()">
+        <section class="jumbo text-center mt-4">
+            <div class="container">
+                <h1 class="jumbo-heading">Finished session</h1>
+                <p class="lead text-muted">Congratulations, you finished!</p>
+            </div>
+        </section>
+        <form class="d-flex form py-3 bg-light justify-content-center" action="/" method="GET">
+            <button class="btn btn-primary btn-md btn-block mx-auto" style="width:15%; color:white;" type="submit" id="return-button">Return home</button>
+        </form>
+        <hr class="mb-4">
+        <div class="gallery py-5 bg-light">
+            <div class="container" id="gallery"></div>
+        </div>
+    </body>
+
+    <script>
+        // Get images 
+        images = JSON.parse('{{images|safe}}'); 
+        console.log(images);
+
+        // "write" code dynamically to display all images in array
+        var str = '<div class="row">';
+        var counter = 0;
+        images.forEach((img) => {
+            str += "<div class='col md-4'>";
+            str += "<div class='card mb-4 box-shadow'>";
+            str += "<a href='" + img[5] + "' target='_blank'>"
+            str += '<img class="card-img-top" alt="Thumbnail" style="height: 250px; width: 100%; display: block; object-fit: cover;" src="' + img[4];
+            str += '" src="picture" data-holder-rendered="true" loading="lazy">';
+            str += "</a>"
+            str += '<div class="card-body">';
+            str += '<p class="card-text">' + "From: " + img[6] + "<br>Uploader: " + img[1] +'</p></div>';
+            str += '</div>';
+            str += '</div>';
+            counter += 1; 
+
+            // 5 images per row: when filled, create new row 
+            if (counter === 5){
+                counter = 0;
+                str += '</div>';
+                str += '<div class="row">';
+            }
+        });
+
+        // If rows are not completely filled, images will automatically stretch to compensate. 
+        // Prevent this by adding hidden filler  
+        while (counter < 5){
+            str += "<div class='col md-4' style='opacity:0;'></div>";
+            counter += 1; 
+        }
+
+        // Complete string and place into html container 
+        str += "</div>";
+        console.log(str);
+        document.getElementById("gallery").innerHTML = str; 
+
+        // Log user-perceived load time to console
+        function onLoad() { 
+            var now = new Date().getTime();
+            var page_load_time = now - performance.timing.navigationStart;
+            console.log("User-perceived page loading time: " + page_load_time);
+        }
+    </script>
+</html>

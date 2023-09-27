@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/icons.css') }}">
+        <title>Practice / BeeArtsy</title>
+    </head>
+
+    <body class="bg-black"  onload="onLoad()">
+        <div class = "container-fluid">
+            <div class="d-flex justify-content-center">
+                <img src="" id="image" onload="timer.start()" height="900vh" style="object-fit: contain;"/>
+            </div>
+        </div>
+        <div class="container mt-5">
+            <nav class="navbar fixed-bottom navbar-dark bg-primary">
+                <div class="row mx-auto">
+                    <h3 id ="timer"></h3>
+                </div>
+                <div class="container-fluid justify-content-center">
+                    <div class="mx-2">
+                        <button onclick="prevImg()" id="prevImgButton">
+                            <img class="material-icons" src="{{ url_for('static', filename='assets/skip_prev.png') }}">
+                        </button>
+                    </div>
+                    <div class="mx-2">
+                        <button onclick="timer.togglePause()" id = "pauseButton">
+                            <img class="material-icons" id="pause-play-icon" src="{{ url_for('static', filename='assets/pause.png') }}">
+                        </button>
+                    </div>
+                    <div class="mx-2">
+                        <button onclick="stopButton()" id = "stopButton">
+                            <img class="material-icons" src="{{ url_for('static', filename='assets/stop.png') }}">
+                        </button>
+                    </div>
+                    <div class="mx-2">
+                        <button onclick="nextImg()" id="nextImgButton">
+                            <img class="material-icons" src="{{ url_for('static', filename='assets/skip_next.png') }}">
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        
+        <script>
+            // Variables // 
+            var image = document.getElementById("image");   // image being displayed to user
+            var index, currSec, pictureArray, interval;
+            var sessionID = "{{sessionID}}";
+            let IMG_INDEX = 3;                              // Array index constant: image url location 
+
+            /****************************************************************************
+             * Load variables onto page. If previous session was interrupted, reload    *
+             * from session storage.                                                    *
+             ****************************************************************************/
+            if ((sessionStorage.getItem('sessionID')) && (sessionID ==  "")){
+                console.log("Loaded from session " + sessionStorage.getItem('sessionID')); 
+
+                // Retrieve Image Array  
+                if (sessionStorage.getItem("pictureArray")) {
+                    pictureArray = JSON.parse(sessionStorage.getItem('pictureArray'));
+                }
+                // keeps track of current index in image array user was viewing 
+                if (sessionStorage.getItem("index")){
+                    index = sessionStorage.getItem("index");
+                }
+                // Time interval for each picture (seconds)
+                if (sessionStorage.getItem("interval")){
+                    interval = sessionStorage.getItem("interval");
+                }
+                // Time remaining in current time interval
+                if (sessionStorage.getItem("currentTime")){
+                    currSec = sessionStorage.getItem("currentTime"); 
+                }
+            }  
+
+            // Load new data and store as a session //
+            else {
+                console.log("new session");
+                pictureArray = JSON.parse('{{images|safe}}');   
+                index = 0; 
+                currSec = "{{seconds}}"; 
+                interval = "{{seconds}}"; 
+                    
+                sessionStorage.setItem("pictureArray", JSON.stringify(pictureArray));
+                sessionStorage.setItem("index", index);
+                sessionStorage.setItem("interval", interval);
+                sessionStorage.setItem("currentTime", currSec);
+                sessionStorage.setItem('sessionID', sessionID);
+                
+            }
+            
+            /* Initialize Document Elements */
+            // Inital counter
+            document.getElementById("timer").textContent = formatTime(currSec);
+            // init image 
+            image.src = pictureArray[index][IMG_INDEX];
+            console.log(pictureArray[index][IMG_INDEX]); 
+
+            /****************************************************************************
+             * Starts, pauses, resumes timer.                                           *
+             * Loads and displays next image once timer is finished                     *
+             * @param {int} delay: time, in milliseconds, the timer should delay        *
+             * between executions.                                                      *
+             ****************************************************************************/
+            var Timer = function(delay){
+                var timerID, start, remaining=delay; 
+                let isPaused = false;
+
+                this.start = function() {
+                    if (timerID){
+                        return;
+                    }
+                    start = remaining;
+                    
+                    if(!isPaused){
+                        timerID = setInterval(countdown, delay);
+                    }
+                }
+
+                this.togglePause = function(){
+                    const button = document.getElementById("pause-play-icon"); 
+                    //Resume 
+                    if (isPaused){
+                        isPaused = false; 
+                        button.src = "{{ url_for('static', filename='assets/pause.png') }}";
+                        if (timerID){
+                            return;
+                        }
+                        start = remaining;
+                        timerID = setInterval(countdown, delay);
+                    }
+                    //Pause 
+                    else {
+                        isPaused = true; 
+                        button.src = "{{ url_for('static', filename='assets/play.png') }}";
+                        clearInterval(timerID);
+                        timerID = null; 
+                        remaining = interval - currSec; 
+                    }
+                }
+                
+                this.stop = function() {
+                    clearInterval(timerID);
+                    timerID = null;
+                    remaining = delay; 
+                    currSec = interval; 
+                    document.getElementById("timer").innerHTML = formatTime(currSec);
+                }
+
+                /****************************************************************************
+                 * Every tick, the countdown is reduced by 1 and displayed to the page.     *
+                 * At the end of the countdown, the next picture is loaded and displayed    *
+                 * to the page. The coutdown is reset. When there are no more pictures in   *
+                 * the array, the function returns.                                         *
+                 ****************************************************************************/
+                function countdown() {
+                    // Reached end of countdown 
+                    if (currSec <= 0) {
+                        clearInterval(timerID);                 // Clear timer
+                        index++;                                // Increase index to get next image 
+                        sessionStorage.setItem("index", index); //Save current place in array to session storage
+
+                        if (index < pictureArray.length) {      // If not end of picture array 
+                            // Try loading next image 
+                            try {
+                                image.src = pictureArray[index][IMG_INDEX];    
+                            }
+                            catch(error){
+                                alert("Error: Could not load image");
+                                return; 
+                            }
+                            remaining=delay;                // reset timer                        
+                            image.onload = function(){      // wait for image to load before starting timer 
+                                currSec = interval
+                                sessionStorage.setItem("currentTime", currSec);
+                                document.getElementById("timer").innerHTML = formatTime(currSec);
+                                timerID = setInterval(countdown, delay);
+                            }
+                        }
+                        // End of array, no more pictures  
+                        else {
+                            if (confirm("Reached end of images, would you like to exit this session?")){
+                                finishSession(); 
+                            }
+                            else {
+                                return; 
+                            }
+                            return; 
+                        }                    
+                    }
+                    // Reduce timer and update to page 
+                    else {
+                        currSec = currSec-1; 
+                        sessionStorage.setItem("currentTime", currSec);
+                        document.getElementById("timer").innerHTML = formatTime(currSec);
+                    }
+                }
+            };
+
+            // Create the timer for the page. 
+            var timer = new Timer(1000);
+            
+            /****************************************************************************
+             * Format timer on page to display as minutes and seconds                   *
+             * @param {int} s: the total amount of seconds remaining                    *
+            ****************************************************************************/
+            function formatTime(s)
+            {
+                const options = {
+                    minute: "numeric",
+                    second: "numeric"
+                };
+                const formattedTime = new Intl.DateTimeFormat("en-US", options).format(s*1000);
+                return formattedTime; 
+            }
+
+            /****************************************************************************
+             * Clear the session storage and return user to the home page               *
+            ****************************************************************************/
+            function finishSession() {
+                sessionStorage.clear();     // Clear session data  
+
+                // Return to "home"
+                const form = document.createElement('form');
+                form.method = "post"; 
+                form.action - '/gallery'; 
+                document.body.appendChild(form); 
+                form.submit(); 
+            }
+
+            /****************************************************************************
+             * If user wants to exit before complete, add confirmation before exiting   *
+            ****************************************************************************/
+            function stopButton() {
+                if (confirm("Are you sure you would like to stop this session?")){
+                    finishSession();
+                }
+                else {
+                    return; 
+                }
+            }
+
+            /****************************************************************************
+             * Get the previous image shown to the user.                                *
+            ****************************************************************************/
+            function prevImg() {
+                if (index<= 0){
+                    alert("No previous images"); 
+                    return; 
+                }
+                
+                timer.stop(); 
+
+                // Decrement and save index 
+                index--; 
+                sessionStorage.setItem("index", index); //Save current place in array to session storage
+
+                // Try loading next image 
+                try {
+                    image.src = pictureArray[index][IMG_INDEX];    
+                    console.log(pictureArray[index][IMG_INDEX]); 
+                }
+                catch(error){
+                    alert("Error: Could not load image");
+                    return; 
+                }
+
+                image.onload = function(){
+                    timer.start(); 
+                }
+            }
+
+            /****************************************************************************
+             * Get the next image to show to the user.                                  *
+            ****************************************************************************/
+            function nextImg() {
+                // if last image, suggest finishing 
+                if (index >= pictureArray.length-1){
+                    if (confirm("Reached end of images, would you like to exit this session?"))
+                    {
+                        finishSession(); 
+                    }
+                    else {
+                        return; 
+                    }
+                    return;  
+                }
+                
+                timer.stop();
+
+                // Increment and save index 
+                index++; 
+                sessionStorage.setItem("index", index); 
+
+                // Try loading next image 
+                try {
+                    image.src = pictureArray[index][IMG_INDEX];    
+                    console.log(pictureArray[index][IMG_INDEX]); 
+                }
+                catch(error){
+                    alert("Error: Could not load image");
+                    return; 
+                }
+
+                image.onload = function(){
+                    timer.start(); 
+                }
+            }
+
+            // Log user-perceived load time to console
+            function onLoad() { 
+                var now = new Date().getTime();
+                var page_load_time = now - performance.timing.navigationStart;
+                console.log("User-perceived page loading time: " + page_load_time);
+            }
+
+        </script>
+    </body>
+</html>

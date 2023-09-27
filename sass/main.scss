@@ -1,0 +1,18 @@
+@use 'sass:math';
+
+// Custom Variables
+$light: #EFF1F5;
+$body-color: #21242B;
+$primary: #AD935C;
+
+$btn-font-weight: 600; 
+$btn-font-size: 1.25rem;
+
+
+.btn-bold-text {
+    color: $light; 
+}
+
+// import bootstrap
+@import '../node_modules/bootstrap/scss/bootstrap';
+
