@@ -9,9 +9,9 @@ be brought to a final page where all the images they recieved will be displayed 
 # Getting Started 
 ## Dependencies 
 * Python 3.11.5
-* Flask 2.3.3
-* Numpy 1.26.0
-* Requests 2.31.0
+  * Flask 2.3.3
+  * Numpy 1.26.0
+  * Requests 2.31.0
 
 ## API Keys 
 To properly run this website, you need to acquire the API keys from Pexels and Unsplash. 
